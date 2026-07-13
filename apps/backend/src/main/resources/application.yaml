@@ -1,3 +1,27 @@
 spring:
   application:
     name: demo-spring-ai
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/spring_ai_demo}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: demo
+
+demo:
+  database:
+    reset-enabled: true

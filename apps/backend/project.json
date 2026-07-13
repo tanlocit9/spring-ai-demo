@@ -1,0 +1,50 @@
+{
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "backend",
+    "projectType": "application",
+    "root": "apps/backend",
+    "sourceRoot": "apps/backend/src",
+    "tags": [
+        "type:app",
+        "scope:backend"
+    ],
+    "targets": {
+        "build": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "gradlew.bat build -x test",
+                "cwd": "apps/backend"
+            },
+            "outputs": [
+                "{projectRoot}/build"
+            ]
+        },
+        "clean": {
+            "cache": false,
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "gradlew.bat clean -x test",
+                "cwd": "apps/backend"
+            }
+        },
+        "serve": {
+            "continuous": true,
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "gradlew.bat bootRun -x test",
+                "cwd": "apps/backend"
+            }
+        },
+        "test": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "gradlew.bat test",
+                "cwd": "apps/backend"
+            },
+            "outputs": [
+                "{projectRoot}/build/test-results",
+                "{projectRoot}/build/reports/tests"
+            ]
+        }
+    }
+}
