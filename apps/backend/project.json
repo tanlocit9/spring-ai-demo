@@ -31,7 +31,7 @@
             "continuous": true,
             "executor": "nx:run-commands",
             "options": {
-                "command": "gradlew.bat bootRun -x test",
+                "command": "gradlew.bat bootRun -x test --continuous",
                 "cwd": "apps/backend"
             }
         },

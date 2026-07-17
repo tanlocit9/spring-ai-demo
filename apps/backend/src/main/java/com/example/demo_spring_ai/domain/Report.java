@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -36,7 +37,8 @@ public class Report {
 	private Employee employee;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "report_type", nullable = false)
+	@Column(name = "report_type", nullable = false, columnDefinition = "report_type")
+	@JdbcTypeCode(SqlTypes.NAMED_ENUM)
 	private ReportType reportType;
 
 	@Column(name = "report_date")
@@ -48,19 +50,19 @@ public class Report {
 	@Column(name = "period_end")
 	private LocalDate periodEnd;
 
-	@JdbcTypeCode(SqlTypes.JSON)
 	@Convert(converter = JsonbListConverter.class)
 	@Column(name = "completed_tasks", nullable = false, columnDefinition = "jsonb")
+	@ColumnTransformer(write = "?::jsonb")
 	private List<String> completedTasks = new ArrayList<>();
 
-	@JdbcTypeCode(SqlTypes.JSON)
 	@Convert(converter = JsonbListConverter.class)
 	@Column(name = "next_plans", nullable = false, columnDefinition = "jsonb")
+	@ColumnTransformer(write = "?::jsonb")
 	private List<String> nextPlans = new ArrayList<>();
 
-	@JdbcTypeCode(SqlTypes.JSON)
 	@Convert(converter = JsonbListConverter.class)
 	@Column(name = "blockers", nullable = false, columnDefinition = "jsonb")
+	@ColumnTransformer(write = "?::jsonb")
 	private List<String> blockers = new ArrayList<>();
 
 	@Column(nullable = false)

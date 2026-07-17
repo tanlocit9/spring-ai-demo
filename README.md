@@ -14,6 +14,27 @@
 npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
 ```
 
+## Postgres database
+
+This project includes a Dockerized Postgres database that matches the Spring datasource default in [`application.yaml`](apps/backend/src/main/resources/application.yaml:5): `jdbc:postgresql://localhost:5434/spring_ai_demo`.
+
+Start the database:
+
+```sh
+docker compose -f docker-compose.postgres.yml up -d --build
+```
+
+The first container startup initializes the database with [`schema.sql`](apps/backend/src/main/resources/db/schema.sql) and [`seed.sql`](apps/backend/src/main/resources/db/seed.sql). The initialization runs only when the named Docker volume is empty.
+
+Reset the database and re-run seed data:
+
+```sh
+docker compose -f docker-compose.postgres.yml down -v
+docker compose -f docker-compose.postgres.yml up -d --build
+```
+
+Optional local environment values are available in [`.env.postgres.example`](.env.postgres.example).
+
 ## Run tasks
 
 To build the library use:

@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,13 +36,15 @@ public class PtoRecord {
 	private LocalDate ptoDate;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "pto_type", nullable = false)
+	@Column(name = "pto_type", nullable = false, columnDefinition = "pto_type")
+	@JdbcTypeCode(SqlTypes.NAMED_ENUM)
 	private PtoType ptoType;
 
 	private String reason;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "pto_status")
+	@JdbcTypeCode(SqlTypes.NAMED_ENUM)
 	private PtoStatus status = PtoStatus.PENDING;
 
 	@CreationTimestamp

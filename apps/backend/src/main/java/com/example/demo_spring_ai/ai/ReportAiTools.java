@@ -7,6 +7,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
 import com.example.demo_spring_ai.domain.PtoRecord;
+import com.example.demo_spring_ai.domain.PtoType;
 import com.example.demo_spring_ai.security.ActorContext;
 import com.example.demo_spring_ai.service.EmployeeAccessService;
 import com.example.demo_spring_ai.service.ReportDtos.DailyReportRequest;
@@ -26,19 +27,19 @@ public class ReportAiTools {
 		this.employees = employees;
 	}
 
-	@Tool(description = "Create the current actor's daily report. Permissions are enforced by the backend actor context.")
-	public ReportView createDailyReport(Long actorId, DailyReportRequest request) {
-		return reports.createDailyReport(new ActorContext(actorId), request);
+	@Tool(description = "Create the current actor's daily report. Provide request.reportDate as ISO-8601 text, for example 2026-07-17. Permissions are enforced by the backend actor context.")
+	public ReportView createDailyReport(Long actorId, ReportAiTools.AiDailyReportRequest request) {
+		return reports.createDailyReport(new ActorContext(actorId), request.toServiceRequest());
 	}
 
-	@Tool(description = "Get the current actor's daily report for a date.")
-	public ReportView getMyReport(Long actorId, LocalDate reportDate) {
-		return reports.getMyReport(new ActorContext(actorId), reportDate);
+	@Tool(description = "Get the current actor's daily report for a date. Provide reportDate as ISO-8601 text, for example 2026-07-17.")
+	public ReportView getMyReport(Long actorId, String reportDate) {
+		return reports.getMyReport(new ActorContext(actorId), parseDate(reportDate, "reportDate"));
 	}
 
-	@Tool(description = "Update the current actor's daily report. Managers cannot edit another employee's report.")
-	public ReportView updateMyReport(Long actorId, DailyReportRequest request) {
-		return reports.updateMyReport(new ActorContext(actorId), request);
+	@Tool(description = "Update the current actor's daily report. Provide request.reportDate as ISO-8601 text, for example 2026-07-17. Managers cannot edit another employee's report.")
+	public ReportView updateMyReport(Long actorId, ReportAiTools.AiDailyReportRequest request) {
+		return reports.updateMyReport(new ActorContext(actorId), request.toServiceRequest());
 	}
 
 	@Tool(description = "Search employees visible to the current actor for duplicate-name resolution.")
@@ -48,18 +49,39 @@ public class ReportAiTools {
 			.toList();
 	}
 
-	@Tool(description = "Get a visible employee's daily report after backend access checks.")
-	public ReportView getEmployeeReport(Long actorId, Long employeeId, LocalDate reportDate) {
-		return reports.getEmployeeReport(new ActorContext(actorId), employeeId, reportDate);
+	@Tool(description = "Get a visible employee's daily report after backend access checks. Provide reportDate as ISO-8601 text, for example 2026-07-17.")
+	public ReportView getEmployeeReport(Long actorId, Long employeeId, String reportDate) {
+		return reports.getEmployeeReport(new ActorContext(actorId), employeeId, parseDate(reportDate, "reportDate"));
 	}
 
-	@Tool(description = "Create a PTO record for weekly validation workflows.")
-	public PtoRecord createPtoRecord(Long actorId, PtoRequest request) {
-		return reports.createPtoRecord(new ActorContext(actorId), request);
+	@Tool(description = "Create a PTO record for weekly validation workflows. Provide request.ptoDate as ISO-8601 text, for example 2026-07-17.")
+	public PtoRecord createPtoRecord(Long actorId, ReportAiTools.AiPtoRequest request) {
+		return reports.createPtoRecord(new ActorContext(actorId), request.toServiceRequest());
 	}
 
-	@Tool(description = "Generate a weekly report from daily reports and approved PTO, returning MISSING_WORKDAY_DATA when needed.")
-	public WeeklyResult generateWeeklyReport(Long actorId, Long employeeId, LocalDate periodStart, LocalDate periodEnd) {
-		return reports.generateWeeklyReport(new ActorContext(actorId), employeeId, periodStart, periodEnd);
+	@Tool(description = "Generate a weekly report from daily reports and approved PTO, returning MISSING_WORKDAY_DATA when needed. Provide periodStart and periodEnd as ISO-8601 text, for example 2026-07-13.")
+	public WeeklyResult generateWeeklyReport(Long actorId, Long employeeId, String periodStart, String periodEnd) {
+		return reports.generateWeeklyReport(new ActorContext(actorId), employeeId, parseDate(periodStart, "periodStart"), parseDate(periodEnd, "periodEnd"));
+	}
+
+	public record AiDailyReportRequest(String reportDate, List<String> completedTasks, List<String> nextPlans, List<String> blockers, String content) {
+		DailyReportRequest toServiceRequest() {
+			return new DailyReportRequest(parseDate(reportDate, "reportDate"), completedTasks, nextPlans, blockers, content);
+		}
+	}
+
+	public record AiPtoRequest(Long employeeId, String ptoDate, PtoType ptoType, String reason, boolean approved) {
+		PtoRequest toServiceRequest() {
+			return new PtoRequest(employeeId, parseDate(ptoDate, "ptoDate"), ptoType, reason, approved);
+		}
+	}
+
+	private static LocalDate parseDate(String value, String fieldName) {
+		try {
+			return LocalDate.parse(value);
+		}
+		catch (RuntimeException ex) {
+			throw new IllegalArgumentException(fieldName + " must be an ISO-8601 date string, for example 2026-07-17", ex);
+		}
 	}
 }

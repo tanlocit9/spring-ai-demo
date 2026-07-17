@@ -1,0 +1,23 @@
+services:
+  postgres:
+    build:
+      context: ./docker/postgres
+    container_name: spring-ai-demo-postgres
+    environment:
+      POSTGRES_DB: spring_ai_demo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - spring-ai-demo-postgres-data:/var/lib/postgresql/data
+      - ./apps/backend/src/main/resources/db:/seed-data:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d spring_ai_demo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  spring-ai-demo-postgres-data:

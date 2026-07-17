@@ -2,10 +2,12 @@ spring:
   application:
     name: demo-spring-ai
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/spring_ai_demo}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5434/spring_ai_demo}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
     properties:
@@ -14,7 +16,11 @@ spring:
     open-in-view: false
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY:}
+      base-url: http://localhost:20128/v1
+      api-key: ${OPENAI_API_KEY:sk_9router}
+      chat:
+        options:
+          model: Codex 
 
 ---
 spring:

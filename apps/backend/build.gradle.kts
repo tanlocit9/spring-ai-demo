@@ -23,6 +23,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	implementation("org.springframework:spring-jdbc")
 	implementation("org.springframework.ai:spring-ai-starter-model-openai")
 
