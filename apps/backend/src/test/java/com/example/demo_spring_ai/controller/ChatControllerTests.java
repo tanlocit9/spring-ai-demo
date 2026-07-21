@@ -2,6 +2,8 @@ package com.example.demo_spring_ai.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,10 +25,11 @@ import com.example.demo_spring_ai.ai.response.RichTextType;
 class ChatControllerTests {
 	@Test
 	void chatReturnsDynamicStructuredJsonMessagesAndNoTopLevelMessage() throws Exception {
-		var chatClient = mock(ChatClient.class);
+		var chatOnlyClient = mock(ChatClient.class);
+		var reportToolClient = mock(ChatClient.class);
 		var requestSpec = mock(ChatClientRequestSpec.class);
 		var callSpec = mock(CallResponseSpec.class);
-		when(chatClient.prompt()).thenReturn(requestSpec);
+		when(reportToolClient.prompt()).thenReturn(requestSpec);
 		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
 		when(requestSpec.advisors(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
 		when(requestSpec.call()).thenReturn(callSpec);
@@ -35,7 +38,7 @@ class ChatControllerTests {
 			new RichTextResponse(RichTextType.STATUS, "Blockers", "None", List.of(), java.util.Map.of("status", "success"))
 		)));
 
-		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatClient, new AiResponseMapper())).build();
+		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper())).build();
 
 		mvc.perform(post("/api/chat")
 				.header("X-Actor-Id", "1")
@@ -48,5 +51,86 @@ class ChatControllerTests {
 			.andExpect(jsonPath("$.messages[1].type").value("STATUS"))
 			.andExpect(jsonPath("$.messages[1].metadata.status").value("success"))
 			.andExpect(jsonPath("$.message").doesNotExist());
+	}
+
+	@Test
+	void chatOnlyMessageUsesChatOnlyClient() throws Exception {
+		var chatOnlyClient = mock(ChatClient.class);
+		var reportToolClient = mock(ChatClient.class);
+		var requestSpec = mock(ChatClientRequestSpec.class);
+		var callSpec = mock(CallResponseSpec.class);
+		when(chatOnlyClient.prompt()).thenReturn(requestSpec);
+		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
+		when(requestSpec.advisors(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
+		when(requestSpec.call()).thenReturn(callSpec);
+		when(callSpec.entity(AiResponse.class)).thenReturn(new AiResponse(List.of(
+			new RichTextResponse(RichTextType.PARAGRAPH, null, "I can help with reports.", List.of(), java.util.Map.of())
+		)));
+
+		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper())).build();
+
+		mvc.perform(post("/api/chat")
+				.header("X-Actor-Id", "1")
+				.contentType("application/json")
+				.content("{\"message\":\"hello, what can you do?\"}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.messages[0].type").value("PARAGRAPH"));
+
+		verify(chatOnlyClient).prompt();
+		verify(reportToolClient, never()).prompt();
+	}
+
+	@Test
+	void reportMessageUsesReportToolClient() throws Exception {
+		var chatOnlyClient = mock(ChatClient.class);
+		var reportToolClient = mock(ChatClient.class);
+		var requestSpec = mock(ChatClientRequestSpec.class);
+		var callSpec = mock(CallResponseSpec.class);
+		when(reportToolClient.prompt()).thenReturn(requestSpec);
+		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
+		when(requestSpec.advisors(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
+		when(requestSpec.call()).thenReturn(callSpec);
+		when(callSpec.entity(AiResponse.class)).thenReturn(new AiResponse(List.of(
+			new RichTextResponse(RichTextType.HEADING, "Daily Report", null, List.of(), java.util.Map.of("date", "2026-07-13"))
+		)));
+
+		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper())).build();
+
+		mvc.perform(post("/api/chat")
+				.header("X-Actor-Id", "1")
+				.contentType("application/json")
+				.content("{\"message\":\"show my report\"}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.messages[0].type").value("HEADING"));
+
+		verify(reportToolClient).prompt();
+		verify(chatOnlyClient, never()).prompt();
+	}
+
+	@Test
+	void ptoMessageUsesReportToolClient() throws Exception {
+		var chatOnlyClient = mock(ChatClient.class);
+		var reportToolClient = mock(ChatClient.class);
+		var requestSpec = mock(ChatClientRequestSpec.class);
+		var callSpec = mock(CallResponseSpec.class);
+		when(reportToolClient.prompt()).thenReturn(requestSpec);
+		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
+		when(requestSpec.advisors(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
+		when(requestSpec.call()).thenReturn(callSpec);
+		when(callSpec.entity(AiResponse.class)).thenReturn(new AiResponse(List.of(
+			new RichTextResponse(RichTextType.STATUS, "PTO", "Recorded", List.of(), java.util.Map.of("status", "success"))
+		)));
+
+		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper())).build();
+
+		mvc.perform(post("/api/chat")
+				.header("X-Actor-Id", "1")
+				.contentType("application/json")
+				.content("{\"message\":\"create sick leave for today\"}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.messages[0].type").value("STATUS"));
+
+		verify(reportToolClient).prompt();
+		verify(chatOnlyClient, never()).prompt();
 	}
 }
