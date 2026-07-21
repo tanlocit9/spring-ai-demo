@@ -3,6 +3,7 @@ services:
     build:
       context: ./docker/postgres
     container_name: spring-ai-demo-postgres
+    restart: always
     environment:
       POSTGRES_DB: spring_ai_demo
       POSTGRES_USER: postgres

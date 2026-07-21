@@ -21,6 +21,7 @@ import com.example.demo_spring_ai.ai.response.AiResponse;
 import com.example.demo_spring_ai.ai.response.AiResponseMapper;
 import com.example.demo_spring_ai.ai.response.RichTextResponse;
 import com.example.demo_spring_ai.ai.response.RichTextType;
+import com.example.demo_spring_ai.repository.EmployeeRepository;
 
 class ChatControllerTests {
 	@Test
@@ -29,6 +30,7 @@ class ChatControllerTests {
 		var reportToolClient = mock(ChatClient.class);
 		var requestSpec = mock(ChatClientRequestSpec.class);
 		var callSpec = mock(CallResponseSpec.class);
+		var employeeRepository = mock(EmployeeRepository.class);
 		when(reportToolClient.prompt()).thenReturn(requestSpec);
 		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
 		when(requestSpec.advisors(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
@@ -38,7 +40,7 @@ class ChatControllerTests {
 			new RichTextResponse(RichTextType.STATUS, "Blockers", "None", List.of(), java.util.Map.of("status", "success"))
 		)));
 
-		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper())).build();
+		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper(), employeeRepository)).build();
 
 		mvc.perform(post("/api/chat")
 				.header("X-Actor-Id", "1")
@@ -59,6 +61,7 @@ class ChatControllerTests {
 		var reportToolClient = mock(ChatClient.class);
 		var requestSpec = mock(ChatClientRequestSpec.class);
 		var callSpec = mock(CallResponseSpec.class);
+		var employeeRepository = mock(EmployeeRepository.class);
 		when(chatOnlyClient.prompt()).thenReturn(requestSpec);
 		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
 		when(requestSpec.advisors(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
@@ -67,7 +70,7 @@ class ChatControllerTests {
 			new RichTextResponse(RichTextType.PARAGRAPH, null, "I can help with reports.", List.of(), java.util.Map.of())
 		)));
 
-		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper())).build();
+		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper(), employeeRepository)).build();
 
 		mvc.perform(post("/api/chat")
 				.header("X-Actor-Id", "1")
@@ -86,6 +89,7 @@ class ChatControllerTests {
 		var reportToolClient = mock(ChatClient.class);
 		var requestSpec = mock(ChatClientRequestSpec.class);
 		var callSpec = mock(CallResponseSpec.class);
+		var employeeRepository = mock(EmployeeRepository.class);
 		when(reportToolClient.prompt()).thenReturn(requestSpec);
 		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
 		when(requestSpec.advisors(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
@@ -94,7 +98,7 @@ class ChatControllerTests {
 			new RichTextResponse(RichTextType.HEADING, "Daily Report", null, List.of(), java.util.Map.of("date", "2026-07-13"))
 		)));
 
-		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper())).build();
+		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper(), employeeRepository)).build();
 
 		mvc.perform(post("/api/chat")
 				.header("X-Actor-Id", "1")
@@ -113,6 +117,7 @@ class ChatControllerTests {
 		var reportToolClient = mock(ChatClient.class);
 		var requestSpec = mock(ChatClientRequestSpec.class);
 		var callSpec = mock(CallResponseSpec.class);
+		var employeeRepository = mock(EmployeeRepository.class);
 		when(reportToolClient.prompt()).thenReturn(requestSpec);
 		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
 		when(requestSpec.advisors(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
@@ -121,7 +126,7 @@ class ChatControllerTests {
 			new RichTextResponse(RichTextType.STATUS, "PTO", "Recorded", List.of(), java.util.Map.of("status", "success"))
 		)));
 
-		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper())).build();
+		var mvc = MockMvcBuilders.standaloneSetup(new ChatController(chatOnlyClient, reportToolClient, new AiResponseMapper(), employeeRepository)).build();
 
 		mvc.perform(post("/api/chat")
 				.header("X-Actor-Id", "1")
