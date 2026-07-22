@@ -2,7 +2,9 @@ package com.example.demo_spring_ai.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +12,9 @@ import org.springframework.data.repository.query.Param;
 import com.example.demo_spring_ai.domain.Employee;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+
+	@EntityGraph(attributePaths = "manager")
+	Optional<Employee> findWithManagerById(Long id);
 
 	List<Employee> findByFullNameContainingIgnoreCaseOrderByFullNameAscEmployeeCodeAsc(String fullName);
 
