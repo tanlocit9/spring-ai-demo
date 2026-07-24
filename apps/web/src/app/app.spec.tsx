@@ -37,6 +37,51 @@ const response = {
 };
 
 describe('multi-panel chat', () => {
+  it('smooth-scrolls a panel when its transcript changes', () => {
+    const scrollIntoView = vi.fn();
+    const panel = {
+      id: 'panel-1',
+      name: 'Agent panel 1',
+      actorId: '1',
+      draft: '',
+      transcript: [],
+      pendingCount: 0,
+    };
+    const props = {
+      onActorIdChange: vi.fn(),
+      onDraftChange: vi.fn(),
+      onSubmit: vi.fn().mockResolvedValue(undefined),
+    };
+    const { rerender } = render(<ChatPanel panel={panel} {...props} />);
+    const transcriptEnd = screen.getByTestId('panel-1-transcript-end');
+    Object.defineProperty(transcriptEnd, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    rerender(
+      <ChatPanel
+        panel={{
+          ...panel,
+          transcript: [
+            {
+              id: 'message-1',
+              role: 'user',
+              source: 'panel',
+              content: 'Hello agent',
+            },
+          ],
+        }}
+        {...props}
+      />,
+    );
+
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'end',
+    });
+  });
+
   it('sends a panel message with that panel actor ID only', async () => {
     const sendChat = vi.fn<SendChat>().mockResolvedValue(response);
     render(<TestApp sendChat={sendChat} />);

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { RichTextMessage } from './chat-api';
 import type { ChatPanelState, TranscriptEntry } from './use-chat-panels';
 
@@ -103,6 +103,15 @@ export function ChatPanel({
   onDraftChange,
   onSubmit,
 }: ChatPanelProps) {
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+    });
+  }, [panel.transcript, panel.pendingCount]);
+
   const submit = (event: FormEvent) => {
     event.preventDefault();
     void onSubmit();
@@ -147,6 +156,11 @@ export function ChatPanel({
             {panel.pendingCount === 1 ? 'request' : 'requests'}…
           </div>
         )}
+        <div
+          ref={transcriptEndRef}
+          data-testid={`${panel.id}-transcript-end`}
+          aria-hidden="true"
+        />
       </div>
 
       <form className="panel-composer" onSubmit={submit}>

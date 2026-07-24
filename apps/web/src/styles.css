@@ -45,7 +45,7 @@ body::before {
 
 .app-shell {
   position: relative;
-  width: min(1500px, calc(100% - 40px));
+  width: min(1800px, calc(100% - 40px));
   margin: 0 auto;
   padding: 56px 0 72px;
 }
