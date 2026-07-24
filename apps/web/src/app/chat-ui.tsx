@@ -106,10 +106,13 @@ export function ChatPanel({
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    transcriptEndRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'end',
-    });
+    const transcriptEnd = transcriptEndRef.current;
+    if (typeof transcriptEnd?.scrollIntoView === 'function') {
+      transcriptEnd.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+      });
+    }
   }, [panel.transcript, panel.pendingCount]);
 
   const submit = (event: FormEvent) => {

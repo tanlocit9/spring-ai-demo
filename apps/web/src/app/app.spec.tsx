@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
+import App from './app';
 import type { SendChat } from './chat-api';
 import { BroadcastComposer, ChatPanel, RichMessage } from './chat-ui';
+import type { GetEmployeeTree } from './employee-tree-api';
 import { useChatPanels } from './use-chat-panels';
 
 function TestApp({ sendChat }: { sendChat: SendChat }) {
@@ -35,6 +37,62 @@ const response = {
     },
   ],
 };
+
+const employeeTree = {
+  id: 1,
+  employeeCode: 'E001',
+  fullName: 'Alice Nguyen',
+  department: 'Executive',
+  managerId: null,
+  children: [
+    {
+      id: 2,
+      employeeCode: 'E002',
+      fullName: 'Bob Tran',
+      department: 'Engineering',
+      managerId: 1,
+      children: [],
+    },
+  ],
+};
+
+describe('employee tree on initial view', () => {
+  it('loads actor 1 and displays the hierarchy above broadcast', async () => {
+    const getEmployeeTree = vi
+      .fn<GetEmployeeTree>()
+      .mockResolvedValue(employeeTree);
+
+    render(<App getEmployeeTree={getEmployeeTree} />);
+
+    expect(screen.getByText('Loading manager tree…')).toBeTruthy();
+    expect(await screen.findByText('Alice Nguyen')).toBeTruthy();
+    expect(screen.getByText('Bob Tran')).toBeTruthy();
+    expect(getEmployeeTree).toHaveBeenCalledWith(1, expect.any(AbortSignal));
+
+    const headings = screen.getAllByRole('heading');
+    expect(
+      headings.indexOf(screen.getByRole('heading', { name: 'Manager tree' })),
+    ).toBeLessThan(
+      headings.indexOf(
+        screen.getByRole('heading', { name: 'Broadcast to every panel' }),
+      ),
+    );
+  });
+
+  it('shows an error and retries the tree request', async () => {
+    const getEmployeeTree = vi
+      .fn<GetEmployeeTree>()
+      .mockRejectedValueOnce(new Error('Database unavailable'))
+      .mockResolvedValueOnce(employeeTree);
+
+    render(<App getEmployeeTree={getEmployeeTree} />);
+
+    expect(await screen.findByText('Manager tree unavailable')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText('Alice Nguyen')).toBeTruthy();
+    expect(getEmployeeTree).toHaveBeenCalledTimes(2);
+  });
+});
 
 describe('multi-panel chat', () => {
   it('smooth-scrolls a panel when its transcript changes', () => {

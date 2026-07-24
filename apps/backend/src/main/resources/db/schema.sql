@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS employees (
     full_name VARCHAR(255) NOT NULL,
     department VARCHAR(255) NOT NULL,
     manager_id BIGINT REFERENCES employees(id),
+    CONSTRAINT chk_employee_not_own_manager CHECK (manager_id IS NULL OR manager_id <> id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

@@ -21,7 +21,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	@Query(value = """
 		WITH RECURSIVE subtree AS (
 		    SELECT * FROM employees WHERE id = :rootId
-		    UNION ALL
+		    UNION
 		    SELECT e.* FROM employees e JOIN subtree s ON e.manager_id = s.id
 		)
 		SELECT * FROM subtree ORDER BY full_name, employee_code
@@ -31,7 +31,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	@Query(value = """
 		WITH RECURSIVE subtree AS (
 		    SELECT id FROM employees WHERE id = :rootId
-		    UNION ALL
+		    UNION
 		    SELECT e.id FROM employees e JOIN subtree s ON e.manager_id = s.id
 		)
 		SELECT EXISTS(SELECT 1 FROM subtree WHERE id = :employeeId)
